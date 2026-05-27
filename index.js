@@ -3,9 +3,13 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const express = require('express');
-const dotenv = require('dotenv')
-const app = express()
+const dotenv = require('dotenv');
+const cors = require('cors')
+const app = express();
 dotenv.config()
+
+app.use(cors());
+app.use(express.json());
 
 const uri = process.env.MONGO_URI;
 
@@ -22,18 +26,39 @@ async function run() {
   try {
     await client.connect();
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // await client.close();
+    const db = client.db('studyNookDB')
+    const roomCollection = db.collection('addRooms')
+
+    console.log("MongoDB Connected Successfully");
+
+    app.get("/featured", async(req, res) => {
+      const featureRoom = req.body
+      const result = await roomCollection.find().limit(3).toArray()
+      res.json(result)
+    })
+
+    app.get("/", (req, res) => {
+      res.send("Express Running Successfully");
+    });
+
+    app.post("/rooms", async (req, res)=> {
+      const roomData = req.body
+      const result = await roomCollection.insertOne(roomData)
+      res.json(result)
+    });
+
+    app.get("/rooms", async(req, res)=> {
+      const result = await roomCollection.find().toArray()
+      res.json(result)
+    })
+
+  } catch (error) {
+    console.log(error);
   }
 }
-run().catch(console.dir);
 
-app.get('/', (req, res)=> {
-    res.send('Express Running Successfully')
+run();
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-
-app.listen(PORT, ()=> {
-    console.log(`Server is running on ${PORT}`)
-})
