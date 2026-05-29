@@ -73,7 +73,14 @@ async function run() {
       const result = await bookingCollection.find({userId : userId}).toArray()
       console.log(result)
       res.json(result)
-    })
+    });
+
+    app.get("/bookings/:roomId", async(req, res) => {
+      const {roomId} = req.params
+      const result = await bookingCollection.find({roomId : roomId}).toArray()
+      console.log(result)
+      res.json(result)
+    });
 
     app.delete("/bookings/:bookingId", async(req, res)=>{
       const {bookingId} = req.params
