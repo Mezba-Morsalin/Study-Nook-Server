@@ -27,7 +27,8 @@ async function run() {
     await client.connect();
 
     const db = client.db('studyNookDB')
-    const roomCollection = db.collection('addRooms')
+    const roomCollection = db.collection('addRooms');
+    const bookingCollection = db.collection('bookings')
 
     console.log("MongoDB Connected Successfully");
 
@@ -58,6 +59,12 @@ async function run() {
         _id : new ObjectId(id)
       }
       const result = await roomCollection.findOne(query)
+      res.json(result)
+    })
+
+    app.post("/bookings", async (req, res)=> {
+      const bookingData = req.body
+      const result =  await bookingCollection.insertOne(bookingData)
       res.json(result)
     })
 
