@@ -48,10 +48,55 @@ async function run() {
       res.json(result)
     });
 
-    app.get("/rooms", async(req, res)=> {
-      const result = await roomCollection.find().toArray()
-      res.json(result)
-    })
+app.get("/rooms", async (req, res) => {
+  try {
+    const search = req.query.search?.trim() || "";
+    const types = req.query.types?.trim() || "";
+
+    let query = {};
+
+    if (search) {
+      query.$or = [
+        {
+          categoryName: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          buildingName: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          facilities: {
+            $in: [new RegExp(search, "i")],
+          },
+        },
+      ];
+    }
+
+    if (types) {
+      query.category = {
+        $regex: `^${types}$`,
+        $options: "i",
+      };
+    }
+
+    console.log(query);
+
+    const result = await roomCollection.find(query).toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      success: false,
+      message: "Failed to fetch rooms",
+    });
+  }
+});
 
     app.get("/rooms/:id", async(req, res)=> {
       const id = req.params.id
@@ -76,10 +121,10 @@ async function run() {
     });
 
     app.get("/bookings/room/:roomId", async (req, res) => {
-  const { roomId } = req.params;
-  const result = await bookingCollection.find({ roomId }).toArray();
-  res.json(result);
-});
+    const { roomId } = req.params;
+    const result = await bookingCollection.find({ roomId }).toArray();
+    res.json(result);
+    });
 
     app.delete("/bookings/:bookingId", async(req, res)=>{
       const {bookingId} = req.params
