@@ -34,7 +34,7 @@ async function run() {
 
     app.get("/featured", async(req, res) => {
       const featureRoom = req.body
-      const result = await roomCollection.find().limit(3).toArray()
+      const result = await roomCollection.find().limit(6).toArray()
       res.json(result)
     })
 
@@ -104,6 +104,16 @@ app.get("/rooms", async (req, res) => {
         _id : new ObjectId(id)
       }
       const result = await roomCollection.findOne(query)
+      res.json(result)
+    })
+
+    app.patch("/rooms/:id", async(req, res)=> {
+      const {id} = req.params
+      const updateRoom = req.body;
+      const result = await roomCollection.updateOne(
+        {_id : new ObjectId(id)},
+        {$set : updateRoom}
+      )
       res.json(result)
     })
 
